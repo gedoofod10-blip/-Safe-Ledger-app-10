@@ -309,16 +309,28 @@ const LedgerPage = () => {
     }
     setShowShareModal(false);
   };
-  
+
   return (
-    <div className="min-h-screen bg-background pb-20 flex flex-col">
+    <div className="min-h-screen bg-background pb-24 flex flex-col">
       <AppHeader
         title={client?.name || '...'}
         showBack
         showSearch={false} 
         showNotifications={false}
         actions={
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1.5">
+            {/* 1. نقل زر الـ PDF للأعلى هنا */}
+            {client && transactions.length > 0 && (
+              <div className="scale-75 origin-right">
+                <LedgerPDFExport
+                  client={client}
+                  transactions={transactions}
+                  totalDebit={totalDebit}
+                  totalCredit={totalCredit}
+                  netBalance={netBalance}
+                />
+              </div>
+            )}
             {client && <ClientRating rating={client.rating} onChange={handleRatingChange} />}
             <button onClick={() => setShowNotes(true)} className="p-1 hover:opacity-70 transition-opacity" title="ملاحظات">
               <StickyNote className="w-5 h-5 text-primary" />
@@ -376,7 +388,6 @@ const LedgerPage = () => {
         </div>
       )}
 
-      {/* --- هنا تم إضافة الـ ID لمنطقة التصوير --- */}
       <div id="ledger-content-to-capture" className="flex flex-col flex-1 bg-background pb-2">
         {budgetLimit > 0 && (
           <div className="sticky top-[52px] z-30 mx-3 mt-2 rounded-xl overflow-hidden shadow-xl animate-fade-in">
@@ -409,7 +420,8 @@ const LedgerPage = () => {
         <div className="p-3 flex-1">
           <Card className="shadow-lg border-0 overflow-hidden animate-fade-in-up">
             <CardContent className="p-0">
-              <div className="bg-table-header text-table-header grid grid-cols-4 text-center text-sm font-bold py-3 px-2 rounded-t-lg">
+              {/* 2. تعديل مساحات الأعمدة لتوسيع التفاصيل */}
+              <div className="bg-table-header text-table-header grid grid-cols-[1fr_1.2fr_2fr_1.2fr] text-center text-sm font-bold py-3 px-2 rounded-t-lg">
                 <span>التاريخ</span>
                 <span>المبلغ</span>
                 <span>التفاصيل</span>
@@ -433,7 +445,7 @@ const LedgerPage = () => {
                   filteredTransactions.map((tx, i) => (
                     <div
                       key={tx.id}
-                      className={`grid grid-cols-4 text-center text-sm py-3 px-2 border-b border-border animate-fade-in cursor-pointer active:bg-primary/10 transition-colors ${i % 2 === 0 ? 'bg-card' : 'bg-muted/30'}`}
+                      className={`grid grid-cols-[1fr_1.2fr_2fr_1.2fr] text-center py-3 px-1 border-b border-border animate-fade-in cursor-pointer active:bg-primary/10 transition-colors ${i % 2 === 0 ? 'bg-card' : 'bg-muted/30'}`}
                       style={{ animationDelay: `${i * 30}ms` }}
                       onTouchStart={() => handleTouchStart(tx)}
                       onTouchEnd={handleTouchEnd}
@@ -442,22 +454,24 @@ const LedgerPage = () => {
                       onMouseUp={handleTouchEnd}
                       onMouseLeave={handleTouchEnd}
                     >
-                      <span className="text-foreground text-xs flex items-center justify-center">{tx.date}</span>
-                      <span className="font-semibold text-foreground flex items-center justify-center">{(tx.amount || 0).toLocaleString()}</span>
-                      <span className="text-foreground text-xs truncate flex items-center justify-center px-1">{tx.details}</span>
+                      <span className="text-foreground text-[11px] flex items-center justify-center">{tx.date}</span>
+                      <span className="font-semibold text-foreground text-sm flex items-center justify-center">{(tx.amount || 0).toLocaleString()}</span>
+                      {/* إزالة الـ truncate عشان النص يظهر كامل وينزل سطر جديد لو طويل */}
+                      <span className="text-foreground text-[12px] flex items-center justify-center px-1 break-words whitespace-normal leading-tight">{tx.details}</span>
                       <span className="flex items-center justify-center gap-1 font-bold text-xs">
-                        {(tx.balance || 0).toLocaleString()}
                         
+                        {/* 3. عكسنا الأسهم بقت تظهر قبل المبلغ */}
                         {tx.type === 'credit' ? (
-                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 text-credit fill-current" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 text-credit fill-current flex-shrink-0" aria-hidden="true">
                             <path d="M21.5 18l-9.5-12-9.5 12h19z" />
                           </svg>
                         ) : (
-                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 text-debit fill-current" aria-hidden="true">
+                          <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 text-debit fill-current flex-shrink-0" aria-hidden="true">
                             <path d="M2.5 6l9.5 12 9.5-12h-19z" />
                           </svg>
                         )}
-                        
+                        <span>{(tx.balance || 0).toLocaleString()}</span>
+
                       </span>
                     </div>
                   ))
@@ -468,36 +482,25 @@ const LedgerPage = () => {
         </div>
       </div>
 
-      {client && transactions.length > 0 && (
-        <div className="px-3 pb-2 flex justify-center animate-fade-in">
-          <LedgerPDFExport
-            client={client}
-            transactions={transactions}
-            totalDebit={totalDebit}
-            totalCredit={totalCredit}
-            netBalance={netBalance}
-          />
-        </div>
-      )}
-
-      <footer className="fixed bottom-0 left-0 right-0 bg-bottom-bar text-bottom-bar z-20 shadow-[0_-2px_10px_rgba(0,0,0,0.15)]">
-        <div className="flex items-center justify-between px-4 py-2.5">
-          <div className="flex items-center gap-4">
-            <button onClick={() => setShowHelp(true)} className="p-1.5 hover:opacity-70 transition-opacity">
-              <HelpCircle className="w-6 h-6" />
-            </button>
-            <button onClick={handleWhatsApp} className="p-1.5 hover:opacity-70 transition-opacity"><MessageCircle className="w-6 h-6" /></button>
-            <button onClick={handleCall} className="p-1.5 hover:opacity-70 transition-opacity"><Phone className="w-6 h-6" /></button>
+      {/* 4. شريط الأزرار السفلي الجديد المنظف */}
+      <footer className="fixed bottom-0 left-0 right-0 bg-bottom-bar text-bottom-bar z-20 shadow-[0_-2px_15px_rgba(0,0,0,0.2)]">
+        <div className="flex items-center justify-between px-4 py-3">
+          {/* زر المشاركة الجديد يمين */}
+          <button onClick={() => setShowShareModal(true)} className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors">
+            <Share2 className="w-4 h-4" />
+            <span className="text-sm font-bold">مشاركة</span>
+          </button>
+          
+          {/* الرصيد في المنتصف */}
+          <div className="text-center text-sm font-bold bg-white/5 px-3 py-2 rounded-lg">
+            {netBalance >= 0 ? 'عليه' : 'له'}: {Math.abs(netBalance).toLocaleString()}
           </div>
-          <div className="text-center text-sm font-semibold">
-            {netBalance >= 0 ? 'عليه' : 'له'}:{Math.abs(netBalance).toLocaleString()}
-          </div>
-          <div className="flex items-center gap-3">
-            <button onClick={() => setShowShareModal(true)} className="p-1.5 hover:opacity-70 transition-opacity"><Share2 className="w-5 h-5" /></button>
-            <button onClick={() => navigate(`/add-transaction?clientId=${clientId}`)} className="w-9 h-9 rounded-full border-2 border-current flex items-center justify-center hover:opacity-70 transition-opacity">
-              <Plus className="w-5 h-5" />
-            </button>
-          </div>
+          
+          {/* زر الإضافة الجديد يسار */}
+          <button onClick={() => navigate(`/add-transaction?clientId=${clientId}`)} className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors">
+            <span className="text-sm font-bold">إضافة مبلغ</span>
+            <Plus className="w-4 h-4" />
+          </button>
         </div>
       </footer>
 
@@ -509,7 +512,6 @@ const LedgerPage = () => {
                 <span className="font-bold text-gray-800 text-lg">PDF</span>
                 <FileText className="w-6 h-6 text-red-600" />
               </button>
-              {/* --- هنا تم تحديث زر الصورة --- */}
               <button onClick={handleShareImage} className="px-5 py-3.5 border-b border-gray-100 flex items-center justify-end gap-4 hover:bg-gray-50 transition-colors">
                 <span className="font-bold text-gray-800 text-lg">صورة</span>
                 <Camera className="w-6 h-6 text-gray-600" />
@@ -587,7 +589,6 @@ const LedgerPage = () => {
         </div>
       )}
 
-      {/* المودال المعدل: إضافة أزرار عليه و له */}
       {editingTx && (
         <div className="fixed inset-0 bg-foreground/40 backdrop-blur-sm z-50 flex items-center justify-center animate-fade-in" onClick={() => setEditingTx(null)}>
           <Card className="shadow-xl w-80 border-0 animate-scale-in" onClick={e => e.stopPropagation()} dir="rtl">
@@ -612,7 +613,6 @@ const LedgerPage = () => {
                 <input className="w-full border border-input rounded-lg px-3 py-2.5 bg-background text-foreground focus:outline-none focus:ring-2 focus:ring-primary/30" type="date" value={editDate} onChange={e => setEditDate(e.target.value)} />
               </div>
 
-              {/* أزرار اختيار نوع المعاملة الجديدة */}
               <div className="flex gap-4 justify-center pt-2">
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input 
