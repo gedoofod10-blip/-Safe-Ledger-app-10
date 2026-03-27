@@ -54,9 +54,8 @@ const LedgerPage = () => {
     const txns = await getTransactionsByClient(Number(clientId));
     let balance = 0, dTotal = 0, cTotal = 0;
     
-    // التعديل السحري: مصدات الأمان ضد الداتا المسممة!
+    // مصدات الأمان
     const withBalance = txns.map(t => {
-      // حماية: تحويل أي مبلغ مفقود لصفر، وأي نص مفقود لنص فارغ
       const safeAmount = Number(t.amount) || 0;
       const safeDetails = t.details || '';
       const safeDate = t.date || '';
@@ -82,7 +81,6 @@ const LedgerPage = () => {
   const consumed = budgetLimit > 0 ? Math.min(((totalDebit - totalCredit) / budgetLimit) * 100, 100) : 0;
   const isOverBudget = budgetLimit > 0 && remaining < 0;
 
-  // التعديل السحري 2: حماية دالة البحث عشان ما تضرب
   const filteredTransactions = searchQuery
     ? transactions.filter(tx => 
         (tx.details || '').includes(searchQuery) || 
@@ -91,7 +89,6 @@ const LedgerPage = () => {
       )
     : transactions;
 
-  // --- Long Press Logic ---
   const handleTouchStart = (tx: Transaction & { balance: number }) => {
     pressTimer.current = setTimeout(() => {
       if (navigator.vibrate) navigator.vibrate(50);
@@ -103,7 +100,6 @@ const LedgerPage = () => {
     if (pressTimer.current) clearTimeout(pressTimer.current);
   };
 
-  // --- Real Functionality for Dropdown Menu ---
   const handleWhatsApp = () => { if (client?.phone) window.open(`https://wa.me/${client.phone}`, '_blank'); };
   const handleCall = () => { if (client?.phone) window.open(`tel:${client.phone}`); };
 
@@ -216,32 +212,6 @@ const LedgerPage = () => {
     toast.success('تم تحديث التقييم ✓');
   };
 
-  const handlePaymentDateChange = async (date: string) => {
-    if (!client?.id) return;
-    await updateClient(client.id, { paymentReminderDate: date });
-    setClient(prev => prev ? { ...prev, paymentReminderDate: date } : prev);
-    toast.success('تم تحديد موعد السداد ✓');
-  };
-
-  const handleClearPaymentDate = async () => {
-    if (!client?.id) return;
-    await updateClient(client.id, { paymentReminderDate: undefined });
-    setClient(prev => prev ? { ...prev, paymentReminderDate: undefined } : prev);
-    toast.success('تم حذف موعد السداد');
-  };
-
-  const handleMarkPaid = async () => {
-    if (!client?.id) return;
-    await updateClient(client.id, { paymentReminderDate: undefined });
-    setClient(prev => prev ? { ...prev, paymentReminderDate: undefined } : prev);
-    toast.success('تم تسجيل السداد ✓');
-  };
-
-  const handleMarkUnpaid = async () => {
-    if (!client?.id) return;
-    toast.error(`⚠️ ${client.name || 'العميل'} لم يسدد في الموعد المحدد`);
-  };
-
   const handleAddNote = async (note: string) => {
     if (!client?.id) return;
     const updatedNotes = [...(client.notes || []), note];
@@ -257,11 +227,8 @@ const LedgerPage = () => {
     setClient(prev => prev ? { ...prev, notes: updatedNotes } : prev);
   };
 
-  // --- إضافة الدالة السحرية للكاميرا (صورة مقصوصة) ---
   const handleShareImage = async () => {
     toast.info('جاري تجهيز الصورة، الرجاء الانتظار...');
-    
-    // جلب مكتبة html2canvas برمجياً
     const loadHtml2Canvas = () => {
       return new Promise((resolve, reject) => {
         if ((window as any).html2canvas) {
@@ -309,7 +276,7 @@ const LedgerPage = () => {
     }
     setShowShareModal(false);
   };
-
+  
   return (
     <div className="min-h-screen bg-background pb-24 flex flex-col">
       <AppHeader
@@ -318,10 +285,16 @@ const LedgerPage = () => {
         showSearch={false} 
         showNotifications={false}
         actions={
-          <div className="flex items-center gap-3">
-            {/* 1. زر التصدير بلون فاتح جداً وواضح بيكسر الثيم البني */}
+          /* تم إضافة flex-shrink-0 للـ 3 نقاط وتقليل المسافات عشان ما تختفي في التلفون */
+          <div className="flex items-center gap-1 sm:gap-2 overflow-visible">
+            
+            {/* حيلة برمجية قوية (CSS Hack) لإخفاء زر الواتس من المكون الداخلي بالقوة */}
+            <style>{`
+              .pdf-wrap-clean a, .pdf-wrap-clean button:nth-of-type(2) { display: none !important; }
+            `}</style>
+            
             {client && transactions.length > 0 && (
-              <div className="bg-[#fdfbf7] rounded-lg px-2 py-1 shadow-md scale-90 origin-left border border-gray-200 opacity-95">
+              <div className="pdf-wrap-clean bg-[#fdfbf7] rounded-lg px-2 py-1 shadow-sm border border-gray-200 opacity-95 scale-[0.85] origin-right flex-shrink-1 max-w-[100px] overflow-hidden">
                 <LedgerPDFExport
                   client={client}
                   transactions={transactions}
@@ -332,13 +305,14 @@ const LedgerPage = () => {
               </div>
             )}
             
-            {/* 2. نقطة التقييم (الدائرة الخضراء) رجعت في مكانها الطبيعي */}
-            {client && <ClientRating rating={client.rating} onChange={handleRatingChange} />}
+            {/* التقييم رجع في مكانه وصغرناه شوية عشان المساحة */}
+            {client && <div className="flex-shrink-0 scale-90"><ClientRating rating={client.rating} onChange={handleRatingChange} /></div>}
             
-            <button onClick={() => setShowNotes(true)} className="p-1 hover:opacity-70 transition-opacity" title="ملاحظات">
+            <button onClick={() => setShowNotes(true)} className="p-1 hover:opacity-70 transition-opacity flex-shrink-0" title="ملاحظات">
               <StickyNote className="w-5 h-5 text-primary" />
             </button>
-            <div className="relative z-50">
+            
+            <div className="relative z-50 flex-shrink-0">
               <button onClick={() => setShowMenu(!showMenu)} className="p-1 hover:opacity-70 transition-opacity">
                 <MoreVertical className="w-6 h-6 text-foreground" />
               </button>
