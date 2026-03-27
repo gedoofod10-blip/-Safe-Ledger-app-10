@@ -60,18 +60,6 @@ const LedgerPDFExport = ({ client, transactions, totalDebit, totalCredit, netBal
         <FileDown className="w-3.5 h-3.5" />
         {loading ? 'جاري التصدير...' : 'تصدير PDF'}
       </button>
-      <button
-        onClick={handleShareWhatsApp}
-        disabled={loading}
-        className={cn(
-          "flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold transition-all",
-          "bg-[hsl(var(--credit-color))]/10 text-[hsl(var(--credit-color))] hover:bg-[hsl(var(--credit-color))]/20 active:scale-95",
-          loading && "opacity-50 pointer-events-none"
-        )}
-      >
-        <Share2 className="w-3.5 h-3.5" />
-        واتساب
-      </button>
     </div>
   );
 };
