@@ -5,7 +5,6 @@ import AppHeader from '@/components/AppHeader';
 import PaymentReminderCard from '@/components/PaymentReminderCard';
 import LedgerPDFExport from '@/components/LedgerPDFExport';
 import ClientNotesSheet from '@/components/ClientNotesSheet';
-import ClientRating from '@/components/ClientRating';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone, MessageCircle, Share2, Plus, AlertTriangle, Pencil, Trash2, FileText, X, StickyNote, HelpCircle, MoreVertical, Search, Printer, FileSpreadsheet, MessageSquare, Lock, ArrowRightLeft, Bell, ShieldAlert, ListFilter, Camera } from 'lucide-react';
 import { toast } from 'sonner';
@@ -318,10 +317,10 @@ const LedgerPage = () => {
         showSearch={false} 
         showNotifications={false}
         actions={
-          <div className="flex items-center gap-1.5">
-            {/* 1. نقل زر الـ PDF للأعلى هنا */}
+          <div className="flex items-center gap-2.5">
+            {/* تم حذف الدائرة الخضراء (التقييم) وتم إضافة زر الـ PDF بلون بارز وحجم واضح هنا */}
             {client && transactions.length > 0 && (
-              <div className="scale-75 origin-right">
+              <div className="bg-[#FFD54F]/20 rounded-lg p-1 border border-[#FFD54F]/50 shadow-sm flex items-center justify-center">
                 <LedgerPDFExport
                   client={client}
                   transactions={transactions}
@@ -331,7 +330,7 @@ const LedgerPage = () => {
                 />
               </div>
             )}
-            {client && <ClientRating rating={client.rating} onChange={handleRatingChange} />}
+            
             <button onClick={() => setShowNotes(true)} className="p-1 hover:opacity-70 transition-opacity" title="ملاحظات">
               <StickyNote className="w-5 h-5 text-primary" />
             </button>
@@ -420,7 +419,6 @@ const LedgerPage = () => {
         <div className="p-3 flex-1">
           <Card className="shadow-lg border-0 overflow-hidden animate-fade-in-up">
             <CardContent className="p-0">
-              {/* 2. تعديل مساحات الأعمدة لتوسيع التفاصيل */}
               <div className="bg-table-header text-table-header grid grid-cols-[1fr_1.2fr_2fr_1.2fr] text-center text-sm font-bold py-3 px-2 rounded-t-lg">
                 <span>التاريخ</span>
                 <span>المبلغ</span>
@@ -456,11 +454,9 @@ const LedgerPage = () => {
                     >
                       <span className="text-foreground text-[11px] flex items-center justify-center">{tx.date}</span>
                       <span className="font-semibold text-foreground text-sm flex items-center justify-center">{(tx.amount || 0).toLocaleString()}</span>
-                      {/* إزالة الـ truncate عشان النص يظهر كامل وينزل سطر جديد لو طويل */}
                       <span className="text-foreground text-[12px] flex items-center justify-center px-1 break-words whitespace-normal leading-tight">{tx.details}</span>
                       <span className="flex items-center justify-center gap-1 font-bold text-xs">
                         
-                        {/* 3. عكسنا الأسهم بقت تظهر قبل المبلغ */}
                         {tx.type === 'credit' ? (
                           <svg viewBox="0 0 24 24" className="w-3.5 h-3.5 text-credit fill-current flex-shrink-0" aria-hidden="true">
                             <path d="M21.5 18l-9.5-12-9.5 12h19z" />
@@ -482,13 +478,13 @@ const LedgerPage = () => {
         </div>
       </div>
 
-      {/* 4. شريط الأزرار السفلي الجديد المنظف */}
+      {/* الشريط السفلي المعدل بناءً على صورتك (تبديل الإضافة والمشاركة) */}
       <footer className="fixed bottom-0 left-0 right-0 bg-bottom-bar text-bottom-bar z-20 shadow-[0_-2px_15px_rgba(0,0,0,0.2)]">
-        <div className="flex items-center justify-between px-4 py-3">
-          {/* زر المشاركة الجديد يمين */}
-          <button onClick={() => setShowShareModal(true)} className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors">
-            <Share2 className="w-4 h-4" />
-            <span className="text-sm font-bold">مشاركة</span>
+        <div className="flex items-center justify-between px-3 py-3">
+          {/* زر الإضافة - تم نقله لليمين وأصبح بارزاً */}
+          <button onClick={() => navigate(`/add-transaction?clientId=${clientId}`)} className="flex items-center gap-1.5 bg-[#FFD54F]/20 hover:bg-[#FFD54F]/30 text-[#FFD54F] px-4 py-2 rounded-lg transition-colors border border-[#FFD54F]/30 shadow-sm">
+            <span className="text-sm font-bold">إضافة مبلغ</span>
+            <Plus className="w-4 h-4" />
           </button>
           
           {/* الرصيد في المنتصف */}
@@ -496,10 +492,10 @@ const LedgerPage = () => {
             {netBalance >= 0 ? 'عليه' : 'له'}: {Math.abs(netBalance).toLocaleString()}
           </div>
           
-          {/* زر الإضافة الجديد يسار */}
-          <button onClick={() => navigate(`/add-transaction?clientId=${clientId}`)} className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors">
-            <span className="text-sm font-bold">إضافة مبلغ</span>
-            <Plus className="w-4 h-4" />
+          {/* زر المشاركة - تم نقله لليسار */}
+          <button onClick={() => setShowShareModal(true)} className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors">
+            <Share2 className="w-4 h-4" />
+            <span className="text-sm font-bold">مشاركة</span>
           </button>
         </div>
       </footer>
