@@ -5,6 +5,7 @@ import AppHeader from '@/components/AppHeader';
 import PaymentReminderCard from '@/components/PaymentReminderCard';
 import LedgerPDFExport from '@/components/LedgerPDFExport';
 import ClientNotesSheet from '@/components/ClientNotesSheet';
+import ClientRating from '@/components/ClientRating';
 import { Card, CardContent } from '@/components/ui/card';
 import { Phone, MessageCircle, Share2, Plus, AlertTriangle, Pencil, Trash2, FileText, X, StickyNote, HelpCircle, MoreVertical, Search, Printer, FileSpreadsheet, MessageSquare, Lock, ArrowRightLeft, Bell, ShieldAlert, ListFilter, Camera } from 'lucide-react';
 import { toast } from 'sonner';
@@ -317,10 +318,10 @@ const LedgerPage = () => {
         showSearch={false} 
         showNotifications={false}
         actions={
-          <div className="flex items-center gap-2.5">
-            {/* تم حذف الدائرة الخضراء (التقييم) وتم إضافة زر الـ PDF بلون بارز وحجم واضح هنا */}
+          <div className="flex items-center gap-3">
+            {/* 1. زر التصدير بلون فاتح جداً وواضح بيكسر الثيم البني */}
             {client && transactions.length > 0 && (
-              <div className="bg-[#FFD54F]/20 rounded-lg p-1 border border-[#FFD54F]/50 shadow-sm flex items-center justify-center">
+              <div className="bg-[#fdfbf7] rounded-lg px-2 py-1 shadow-md scale-90 origin-left border border-gray-200 opacity-95">
                 <LedgerPDFExport
                   client={client}
                   transactions={transactions}
@@ -330,6 +331,9 @@ const LedgerPage = () => {
                 />
               </div>
             )}
+            
+            {/* 2. نقطة التقييم (الدائرة الخضراء) رجعت في مكانها الطبيعي */}
+            {client && <ClientRating rating={client.rating} onChange={handleRatingChange} />}
             
             <button onClick={() => setShowNotes(true)} className="p-1 hover:opacity-70 transition-opacity" title="ملاحظات">
               <StickyNote className="w-5 h-5 text-primary" />
@@ -478,21 +482,19 @@ const LedgerPage = () => {
         </div>
       </div>
 
-      {/* الشريط السفلي المعدل بناءً على صورتك (تبديل الإضافة والمشاركة) */}
       <footer className="fixed bottom-0 left-0 right-0 bg-bottom-bar text-bottom-bar z-20 shadow-[0_-2px_15px_rgba(0,0,0,0.2)]">
         <div className="flex items-center justify-between px-3 py-3">
-          {/* زر الإضافة - تم نقله لليمين وأصبح بارزاً */}
+          {/* زر الإضافة - يمين */}
           <button onClick={() => navigate(`/add-transaction?clientId=${clientId}`)} className="flex items-center gap-1.5 bg-[#FFD54F]/20 hover:bg-[#FFD54F]/30 text-[#FFD54F] px-4 py-2 rounded-lg transition-colors border border-[#FFD54F]/30 shadow-sm">
             <span className="text-sm font-bold">إضافة مبلغ</span>
             <Plus className="w-4 h-4" />
           </button>
           
-          {/* الرصيد في المنتصف */}
           <div className="text-center text-sm font-bold bg-white/5 px-3 py-2 rounded-lg">
             {netBalance >= 0 ? 'عليه' : 'له'}: {Math.abs(netBalance).toLocaleString()}
           </div>
           
-          {/* زر المشاركة - تم نقله لليسار */}
+          {/* زر المشاركة - يسار */}
           <button onClick={() => setShowShareModal(true)} className="flex items-center gap-1.5 bg-white/10 hover:bg-white/20 px-4 py-2 rounded-lg transition-colors">
             <Share2 className="w-4 h-4" />
             <span className="text-sm font-bold">مشاركة</span>
